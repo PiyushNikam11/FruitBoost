@@ -1,0 +1,101 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        green: {
+          50:  "#f0fdf0",
+          100: "#dcfbdc",
+          200: "#baf5ba",
+          500: "#53A318",
+          600: "#1B7A1A",
+          700: "#155f14",
+          800: "#0f4710",
+          900: "#0a300b",
+        },
+        "light-green": {
+          50:  "#f4ffe8",
+          100: "#e6f9c8",
+          200: "#d3f3a0",
+          300: "#b8e868",
+          400: "#9adb3a",
+          500: "#53A318",
+          600: "#458814",
+          700: "#386b10",
+          800: "#2a510c",
+          900: "#1d3608",
+        },
+        yellow: {
+          50:  "#fffbeb",
+          100: "#fef3c7",
+          200: "#fde68a",
+          300: "#fcd34d",
+          400: "#fbbf24",
+          500: "#FDB515",
+          600: "#d99a0f",
+          700: "#b87c0a",
+          800: "#925f08",
+          900: "#784d06",
+        },
+        red: {
+          50:  "#fef2f2",
+          100: "#fee2e2",
+          200: "#fecaca",
+          300: "#fca5a5",
+          400: "#f87171",
+          500: "#D83A2E",
+          600: "#b53027",
+          700: "#92261f",
+          800: "#721e1a",
+          900: "#5c1816",
+        },
+        brand: {
+          green:  "#1B7A1A",
+          mid:    "#2d8f2c",
+          light:  "#53A318",
+          yellow: "#FDB515",
+          orange: "#F97316",
+          red:    "#D83A2E",
+        },
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      borderRadius: {
+        "2xl": "1rem",
+        "3xl": "1.25rem",
+        "4xl": "1.5rem",
+      },
+      boxShadow: {
+        xs:      "0 1px 4px rgba(0,0,0,0.06)",
+        sm:      "0 2px 8px rgba(0,0,0,0.07)",
+        card:    "0 4px 24px rgba(0,0,0,0.08)",
+        float:   "0 8px 32px rgba(27,122,26,0.15)",
+        floatY:  "0 8px 32px rgba(253,181,21,0.18)",
+        floatR:  "0 8px 32px rgba(216,58,46,0.15)",
+        hero:    "0 20px 60px rgba(0,0,0,0.12)",
+      },
+      keyframes: {
+        float: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%":     { transform: "translateY(-10px)" },
+        },
+        fadeUp: {
+          "0%":   { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        marquee: {
+          "0%":   { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+      },
+      animation: {
+        float:   "float 5s ease-in-out infinite",
+        fadeUp:  "fadeUp 0.5s ease forwards",
+        marquee: "marquee 28s linear infinite",
+      },
+    },
+  },
+  plugins: [],
+};
