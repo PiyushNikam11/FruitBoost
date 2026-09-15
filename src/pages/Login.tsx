@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -8,16 +8,16 @@ import {
   Lock,
   Eye,
   EyeOff,
-  ShieldCheck,
   AlertCircle,
   RefreshCw,
-  Apple,
-  Truck,
-  Sparkles,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import { apiService } from "@/services/api";
+import { getRegisterUrlForRegistrationStep } from "@/utils/registration";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [emailOrMobile, setEmailOrMobile] = useState("");
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -28,13 +28,33 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAuthenticated, setAuth } = useAuth();
+  const { showSuccess, showError } = useToast();
+
+  const from = (location.state as any)?.from?.pathname || "/dashboard";
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.accessRoleId !== undefined && Number(user.accessRoleId) !== 4) {
+        showError("You do not have permission to access this application.");
+        return;
+      }
+      const regStep = user.registrationStep !== undefined ? Number(user.registrationStep) : 0;
+      if (regStep >= 6) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        const targetUrl = getRegisterUrlForRegistrationStep(regStep);
+        navigate(targetUrl, { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!email.trim()) {
-      newErrors.email = "Email address is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      newErrors.email = "Please enter a valid email address";
+    if (!emailOrMobile.trim()) {
+      newErrors.emailOrMobile = "Email or mobile number is required";
     }
 
     if (!pw) {
@@ -52,16 +72,66 @@ export default function Login() {
     validate();
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTouched({ email: true, pw: true });
+    setTouched({ emailOrMobile: true, pw: true });
 
-    if (validate()) {
-      setIsLoading(true);
-      setTimeout(() => {
+    if (!validate()) return;
+
+    setIsLoading(true);
+
+    try {
+      const res = await apiService.login({
+        emailOrMobile: emailOrMobile.trim(),
+        password: pw,
+      });
+
+      // API could return success boolean in top-level or data
+      const success = res.success !== undefined ? res.success : (res.data?.success ?? true);
+      const apiMessage = res.message || res.data?.message;
+
+      if (success === false) {
+        showError(apiMessage || "Login failed. Please check your credentials.");
         setIsLoading(false);
-        navigate("/dashboard");
-      }, 400);
+        return;
+      }
+
+      const authData: any = res.data || res;
+      const token = authData?.accessToken || (res as any)?.accessToken;
+
+      if (!token) {
+        showError(apiMessage || "Login succeeded, but authentication token was missing.");
+        setIsLoading(false);
+        return;
+      }
+
+      const accessRoleId = authData.accessRoleId ?? authData.data?.accessRoleId;
+
+      // Role check: Only accessRoleId === 4 is allowed (Customer/User)
+      if (accessRoleId !== undefined && Number(accessRoleId) !== 4) {
+        showError("You do not have permission to access this application.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Store auth state securely
+      setAuth(authData);
+      showSuccess(apiMessage || "Login successful!");
+
+      // Registration step redirection logic
+      const registrationStep = authData.registrationStep !== undefined
+        ? Number(authData.registrationStep)
+        : (authData.data?.registrationStep !== undefined ? Number(authData.data.registrationStep) : 0);
+
+      if (registrationStep >= 6) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        const targetUrl = getRegisterUrlForRegistrationStep(registrationStep);
+        navigate(targetUrl, { replace: true });
+      }
+    } catch (err: any) {
+      showError(err.message || "Failed to sign in. Please check your credentials.");
+      setIsLoading(false);
     }
   };
 
@@ -80,7 +150,7 @@ export default function Login() {
         <div className="text-center mb-6">
           <Link to="/" className="inline-block transition-transform hover:scale-105">
             <div className="rounded-[18px] border border-white/60 bg-white/95 px-5 py-2.5 shadow-xl backdrop-blur-md inline-flex items-center justify-center">
-              <img src="/images/logo.png" alt="FrootBoost Logo" className="h-11 sm:h-13 w-auto object-contain" />
+              <img src="/images/logo.png" alt="FrootBoost Logo" className="h-13 sm:h-16 w-auto object-contain" />
             </div>
           </Link>
         </div>
@@ -104,32 +174,32 @@ export default function Login() {
             </div>
 
             <form onSubmit={handleLoginSubmit} noValidate className="space-y-4 pt-2">
-              {/* 1. Email Field */}
+              {/* 1. Email or Mobile Field */}
               <div className="group">
                 <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                  Email Address <span className="text-red-500">*</span>
+                  Email or Mobile Number <span className="text-red-500">*</span>
                 </label>
                 <div className="relative mt-1.5">
                   <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#5FAE2E]" />
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onBlur={() => handleBlur("email")}
-                    placeholder="you@company.com"
+                    type="text"
+                    value={emailOrMobile}
+                    onChange={(e) => setEmailOrMobile(e.target.value)}
+                    onBlur={() => handleBlur("emailOrMobile")}
+                    placeholder="you@company.com or mobile number"
                     className={`w-full rounded-xl border py-3 pl-10 pr-4 text-sm font-semibold outline-none transition-all focus:bg-white ${
-                      touched.email && errors.email
+                      touched.emailOrMobile && errors.emailOrMobile
                         ? "border-red-400 bg-red-50/40 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                         : "border-slate-200/90 bg-slate-50/60 focus:border-[#5FAE2E] focus:ring-4 focus:ring-[#5FAE2E]/15"
                     }`}
                   />
                 </div>
                 <p className="mt-1 text-[11px] font-medium text-slate-500">
-                  Please enter your registered email address.
+                  Please enter your registered email address or mobile number.
                 </p>
-                {touched.email && errors.email && (
+                {touched.emailOrMobile && errors.emailOrMobile && (
                   <p className="mt-0.5 flex items-center gap-1 text-[11px] font-bold text-red-500">
-                    <AlertCircle className="h-3 w-3" /> {errors.email}
+                    <AlertCircle className="h-3 w-3" /> {errors.emailOrMobile}
                   </p>
                 )}
               </div>
@@ -207,22 +277,7 @@ export default function Login() {
                 No lock-in. Cancel or pause in one tap.
               </p>
 
-              {/* Divider */}
-              <div className="relative my-4 flex items-center gap-4">
-                <div className="h-px flex-1 bg-slate-200/80" />
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Or</span>
-                <div className="h-px flex-1 bg-slate-200/80" />
-              </div>
 
-              {/* Single Sign On button */}
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard")}
-                className="flex h-[48px] w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200/90 bg-slate-50/80 text-xs font-extrabold text-slate-700 transition-all hover:bg-slate-100 hover:border-slate-300"
-              >
-                <span className="text-sm">🔑</span>
-                <span>Continue with Single Sign-On (SSO)</span>
-              </button>
 
               {/* 5. Create Account Navigation */}
               <div className="mt-6 pt-4 border-t border-slate-200/70 text-center text-xs font-medium text-slate-600">

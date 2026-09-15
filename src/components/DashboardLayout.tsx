@@ -21,6 +21,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutGrid, isNew: false },
@@ -34,9 +35,25 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const getInitials = (name?: string, email?: string) => {
+    if (name && name.trim()) {
+      const parts = name.trim().split(" ");
+      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (email && email.trim()) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return "FB";
+  };
+
+  const displayName = user?.fullName || user?.userCode || "Valued Subscriber";
+  const userInitials = getInitials(user?.fullName, user?.email);
 
   return (
     <div className="min-h-screen bg-[#FCFBF7] text-slate-900 font-sans antialiased selection:bg-[#6DBE45]/20 selection:text-[#1B7A1A]">
@@ -54,11 +71,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <img
                       src="/images/logo.png"
                       alt="FrootBoost Logo"
-                      className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                      className="h-13 sm:h-15 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                     />
                   </Link>
-
-                  {/* Mobile Menu Toggle Button */}
 
                   {/* Mobile Menu Toggle Button */}
                   <button
@@ -172,16 +187,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
 
                 {/* Logout Button */}
-                <Link
-                  to="/login"
-                  className="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-extrabold text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600"
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-extrabold text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600"
                 >
                   <div className="flex items-center gap-2.5">
                     <LogOut className="h-4 w-4" />
                     <span>Sign Out</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 opacity-40" />
-                </Link>
+                </button>
               </div>
 
             </div>
@@ -190,7 +206,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* ─── MAIN CONTENT CONTAINER ───────────────────────────────── */}
           <div className="flex flex-col gap-6 min-w-0">
 
-            {/* ─── HEADER (REDESIGNED PREMUM HEADER) ─────────────────── */}
+            {/* ─── HEADER (REDESIGNED PREMIUM HEADER) ─────────────────── */}
             <header className="sticky top-4 z-20 rounded-[24px] border border-[#ECECEC] bg-white/90 backdrop-blur-md p-4 sm:px-6 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 
@@ -199,7 +215,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {/* Profile Avatar */}
                   <div className="relative shrink-0">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6DBE45] to-[#1B7A1A] text-white font-black text-lg shadow-[0_6px_16px_rgba(109,190,69,0.35)] ring-2 ring-white">
-                      AR
+                      {userInitials}
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#6DBE45] ring-2 ring-white">
                       <ShieldCheck className="h-2.5 w-2.5 text-white" />
@@ -208,14 +224,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-extrabold text-slate-400">Good Morning 👋</span>
+                      <span className="text-xs font-extrabold text-slate-400">Welcome 👋</span>
                       {/* Subscription Badge */}
                       <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8DF] px-2.5 py-0.5 text-[10px] font-black text-[#1B7A1A] border border-[#6DBE45]/20">
                         <Sparkles className="h-2.5 w-2.5 text-[#6DBE45]" /> Premium Member
                       </span>
                     </div>
                     <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                      Aditya Rao
+                      {displayName}
                     </h1>
                   </div>
                 </div>

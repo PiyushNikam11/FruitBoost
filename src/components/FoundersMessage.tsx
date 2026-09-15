@@ -69,26 +69,38 @@ export default function FoundersMessage() {
             <div className="relative">
               <Reveal>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[#EAF8DF] px-3.5 py-1 text-xs font-black text-[#1B7A1A] border border-[#6DBE45]/20">
-                  <HeartHandshake className="h-3.5 w-3.5 text-[#6DBE45]" /> Our Story & Mission
+                  <HeartHandshake className="h-3.5 w-3.5 text-[#6DBE45]" /> Why We Started
                 </div>
 
                 <h2 className="mt-3 text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                  "Why We Started FrootBoost"
+                  The FruitBoost Story
                 </h2>
               </Reveal>
 
               <Reveal delay={0.05}>
-                <div className="mt-4 space-y-3 text-xs sm:text-sm font-semibold text-slate-600 leading-relaxed">
+                <div className="mt-4 space-y-3.5 text-xs sm:text-sm font-semibold text-slate-600 leading-relaxed">
                   <p>
-                    FrootBoost was born from a simple observation — busy working professionals often skip daily fresh fruits, not because they don't care about wellness, but because they lack the time in demanding work schedules.
+                    Life today is busy. Between work, responsibilities, travel, and daily routines, finding time to eat healthy can be difficult.
                   </p>
 
                   <p>
-                    Our mission is to make healthy habits effortless by delivering freshly cut, hygienically packed fruit boxes directly to office desks every morning. Every box is prepared with handpicked organic fruits, daily soaked almonds, and genuine care.
+                    Even something as simple as eating fresh fruit takes effort — buying it, washing it, cutting it, and making time to eat it. When convenience matters, it’s easy to reach for biscuits, chips, fast food, or other quick options instead.
                   </p>
 
-                  <p className="text-slate-900 font-bold">
-                    We aren't just delivering fruit boxes — we're building a healthier, more energized workplace routine across companies.
+                  <p className="text-slate-900 font-bold bg-[#EAF8DF]/70 p-3.5 rounded-xl border border-[#6DBE45]/30">
+                    But we believe that <strong className="text-[#1B7A1A]">health should never be the thing we compromise on because we’re busy.</strong>
+                  </p>
+
+                  <p>
+                    Life isn’t just about earning more or working harder. Our health is what allows us to enjoy everything we work for. That’s why we created <strong className="text-slate-900 font-black">FruitBoost</strong> — to make healthy eating simple, convenient, and part of your everyday routine.
+                  </p>
+
+                  <p>
+                    Fresh fruits and soaked almonds, thoughtfully packed and ready to eat, delivered to you every morning.
+                  </p>
+
+                  <p className="text-[#1B7A1A] text-sm sm:text-base font-black pt-1">
+                    Because eating healthy shouldn’t be difficult. It should be easy.
                   </p>
                 </div>
               </Reveal>

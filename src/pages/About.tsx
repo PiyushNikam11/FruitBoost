@@ -3,20 +3,13 @@ import { Target, Eye, ShieldCheck, Sparkles, Truck, Apple } from "lucide-react";
 import { Reveal, SectionHeading } from "@/components/Reveal";
 import CTASection from "@/components/CTASection";
 import FoundersMessage from "@/components/FoundersMessage";
-import { stats, heroImages, lifestyleGallery } from "@/data/mock";
+import { heroImages } from "@/data/mock";
 
 const timeline = [
   { icon: Apple, title: "Fresh Purchase", desc: "Hand-picked seasonal produce from trusted farms every morning.", color: "from-green-400 to-green-600" },
   { icon: ShieldCheck, title: "Quality Check", desc: "Every fruit passes a 5-point freshness and ripeness inspection.", color: "from-lime-400 to-green-500" },
   { icon: Sparkles, title: "Packing", desc: "Hygienically packed in eco-friendly, ventilated boxes.", color: "from-yellow-400 to-orange-500" },
   { icon: Truck, title: "Delivery", desc: "Delivered to your office desk before the workday begins.", color: "from-orange-400 to-red-500" },
-];
-
-const aboutStats = [
-  { ...stats[0], gradient: "from-green-400 to-green-600" },
-  { ...stats[2], gradient: "from-yellow-400 to-orange-500" },
-  { label: "Cities", value: "12", suffix: "", gradient: "from-orange-400 to-red-500" },
-  { ...stats[3], gradient: "from-emerald-400 to-teal-500" },
 ];
 
 export default function About() {
@@ -101,22 +94,34 @@ export default function About() {
               <div className="absolute -left-10 top-0 text-8xl text-green-500/10 font-serif leading-none select-none">"</div>
               <div className="relative z-10 rounded-[2rem] border border-white/50 bg-[#f9fcf8]/80 p-10 shadow-xl backdrop-blur-xl">
                 <span className="inline-block rounded-full bg-brand-yellow/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand-yellow">
-                  Why we started
+                  Why We Started
                 </span>
                 <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                  The FruitBoost story
+                  The FruitBoost Story
                 </h2>
                 
                 <div className="mt-8 flex gap-6">
                   {/* Vertical Accent Line */}
                   <div className="w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-green to-brand-yellow/20" />
                   
-                  <div className="space-y-6">
-                    <p className="text-[16px] leading-[1.8] text-slate-600 font-medium">
-                      In 2023, our founder watched his engineering team power through 14-hour days on biscuits, chips, and their fourth cup of coffee. The afternoon energy crashes, the brain fog, the irritability — it wasn't a motivation problem. It was a fuel problem.
+                  <div className="space-y-4 text-slate-600 font-medium text-sm sm:text-base leading-relaxed">
+                    <p>
+                      Life today is busy. Between work, responsibilities, travel, and daily routines, finding time to eat healthy can be difficult.
                     </p>
-                    <p className="text-[16px] leading-[1.8] text-slate-600 font-medium">
-                      He started bringing fresh fruit and soaked almonds to the office. Within two weeks, the whole floor was asking for their own box. FruitBoost was born — premium daily fruit delivery, designed for the way modern teams actually work.
+                    <p>
+                      Even something as simple as eating fresh fruit takes effort — buying it, washing it, cutting it, and making time to eat it. When convenience matters, it’s easy to reach for biscuits, chips, fast food, or other quick options instead.
+                    </p>
+                    <p className="text-slate-900 font-bold bg-green-50/80 p-4 rounded-2xl border border-green-200/60">
+                      But we believe that <strong className="text-brand-green">health should never be the thing we compromise on because we’re busy.</strong>
+                    </p>
+                    <p>
+                      Life isn’t just about earning more or working harder. Our health is what allows us to enjoy everything we work for. That’s why we created <strong className="text-slate-900 font-black">FruitBoost</strong> — to make healthy eating simple, convenient, and part of your everyday routine.
+                    </p>
+                    <p>
+                      Fresh fruits and soaked almonds, thoughtfully packed and ready to eat, delivered to you every morning.
+                    </p>
+                    <p className="text-brand-green text-base font-black pt-1">
+                      Because eating healthy shouldn’t be difficult. It should be easy.
                     </p>
                   </div>
                 </div>
@@ -202,40 +207,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ─── STATS ────────────────────────────────────────── */}
-      <section className="section relative overflow-hidden bg-gradient-to-b from-[#f9fcf8] to-white py-24">
-        <div className="container-x relative z-10 px-4 sm:px-6">
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4 lg:gap-8">
-            {aboutStats.map((s, i) => (
-              <Reveal key={s.label} delay={i * 0.1}>
-                <div className="group relative overflow-hidden rounded-[24px] border border-white/50 bg-white/70 p-10 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                  <div className={`absolute -bottom-6 -right-6 h-32 w-32 rounded-full bg-gradient-to-br ${s.gradient} opacity-5 blur-2xl transition-opacity duration-500 group-hover:opacity-15`} />
-                  <p className="font-extrabold tracking-tight text-5xl">
-                    <span className={`bg-gradient-to-br ${s.gradient} bg-clip-text text-transparent`}>{s.value}</span>
-                    <span className="text-brand-red ml-1">{s.suffix}</span>
-                  </p>
-                  <p className="mt-3 text-[15px] font-bold uppercase tracking-wider text-slate-400">{s.label}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ─── GALLERY ──────────────────────────────────────── */}
-      <section className="pb-32 bg-white">
-        <div className="container-x px-4 sm:px-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            {lifestyleGallery.map((src, i) => (
-              <Reveal key={i} delay={i * 0.1}>
-                <div className="group overflow-hidden rounded-[24px] border border-slate-100 shadow-md">
-                  <img src={src} alt="Office Lifestyle" className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <CTASection />
     </motion.div>

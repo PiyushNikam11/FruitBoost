@@ -43,11 +43,11 @@ export default function Footer() {
           <div className="flex flex-col items-start lg:pr-8 lg:border-r border-white/15">
             {/* White rounded card for logo */}
             <Link to="/" className="mb-6 inline-block">
-              <div className="rounded-[18px] bg-white p-[20px] shadow-xl transition-transform duration-300 hover:scale-105 flex items-center justify-center">
+              <div className="rounded-2xl bg-white px-4 py-2.5 shadow-lg transition-transform duration-300 hover:scale-[1.03] inline-flex items-center justify-center">
                 <img
                   src="/images/logo.png"
                   alt="FrootBoost Logo"
-                  className="h-14 sm:h-16 w-auto object-contain"
+                  className="h-15 sm:h-18 w-auto object-contain"
                 />
               </div>
             </Link>

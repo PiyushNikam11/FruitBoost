@@ -1,7 +1,8 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { motion, useScroll, useSpring } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, logout } = useAuth();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
 
@@ -36,9 +38,9 @@ export default function Navbar() {
         className="absolute bottom-0 left-0 h-0.5 w-full origin-left bg-brand-gradient-full"
       />
 
-      <nav className="container-x flex h-16 items-center justify-between px-4 sm:px-6">
+      <nav className="container-x flex h-18 sm:h-20 items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
-          <img src="/images/logo.png" alt="FrootBoost Logo" className="h-11 sm:h-13 w-auto object-contain max-h-13" />
+          <img src="/images/logo.png" alt="FrootBoost Logo" className="h-13 sm:h-16 w-auto object-contain max-h-16" />
         </Link>
 
         <ul className="hidden items-center gap-1 lg:flex">
@@ -67,8 +69,26 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <Link to="/login" className="text-sm font-semibold text-slate-600 transition-colors hover:text-brand-green">Login</Link>
-          <Link to="/register" className="btn-green !py-2 !px-4 !text-[13px]">Get Started</Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/dashboard" className="btn-green !py-2 !px-4 !text-[13px] flex items-center gap-1.5">
+                <LayoutDashboard className="h-4 w-4" /> Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="text-xs font-extrabold text-slate-500 hover:text-red-600 px-2 py-1 transition-colors flex items-center gap-1"
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" /> Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-semibold text-slate-600 transition-colors hover:text-brand-green">Login</Link>
+              <Link to="/register" className="btn-green !py-2 !px-4 !text-[13px]">Get Started</Link>
+            </>
+          )}
         </div>
 
         <button className="grid h-10 w-10 place-items-center rounded-lg text-slate-700 lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
@@ -97,8 +117,21 @@ export default function Navbar() {
             ))}
           </ul>
           <div className="mt-3 flex gap-2">
-            <Link to="/login" className="btn-outline flex-1">Login</Link>
-            <Link to="/register" className="btn-green flex-1">Get Started</Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard" className="btn-green flex-1 flex items-center justify-center gap-1.5">
+                  <LayoutDashboard className="h-4 w-4" /> Dashboard
+                </Link>
+                <button type="button" onClick={() => logout()} className="btn-outline flex-1">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn-outline flex-1">Login</Link>
+                <Link to="/register" className="btn-green flex-1">Get Started</Link>
+              </>
+            )}
           </div>
         </motion.div>
       )}

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import {
   Play, ArrowRight, ShieldCheck, Truck, Sparkles, Leaf,
   CheckCircle2, Heart, Brain, Zap, Package, Clock, Star,
-  Plus, Minus, ChevronDown, X, Flame,
+  Plus, Minus, ChevronDown, X,
 } from "lucide-react";
 import { Reveal, SectionHeading } from "@/components/Reveal";
 import CTASection from "@/components/CTASection";
@@ -93,135 +93,7 @@ function AnimatedCounter({ value, suffix, color }: { value: string; suffix: stri
   );
 }
 
-/* ─── Nutrition Explorer ───────────────────────────────────── */
-function NutritionExplorer({ fruits }: { fruits: Fruit[] }) {
-  const [active, setActive] = useState(0);
-  const f = fruits[active];
 
-  return (
-    <div className="space-y-6">
-      
-      {/* ─── FRUIT SELECTOR PILLS BAR ─────────────────────────── */}
-      <div className="flex items-center gap-2.5 overflow-x-auto pb-2 snap-x hide-scrollbar justify-start sm:justify-center">
-        {fruits.map((fruit, i) => (
-          <button
-            key={fruit.id}
-            onClick={() => setActive(i)}
-            className={`group shrink-0 inline-flex items-center gap-2.5 rounded-2xl px-4 py-2.5 text-xs font-black transition-all cursor-pointer snap-center ${
-              active === i
-                ? "bg-[#6DBE45] text-white shadow-[0_6px_20px_rgba(109,190,69,0.35)] scale-105"
-                : "bg-white text-slate-700 border border-[#ECECEC] hover:bg-slate-50 hover:border-slate-300"
-            }`}
-          >
-            <span className="text-base leading-none">{fruit.emoji}</span>
-            <span>{fruit.name}</span>
-            <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                active === i ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              {fruit.calories} cal
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* ─── NUTRITION DISPLAY SHOWCASE CARD ──────────────────── */}
-      <motion.div
-        key={f.id}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="relative overflow-hidden rounded-[28px] border border-[#ECECEC] bg-gradient-to-br from-[#EAF8DF]/40 via-white to-[#FFF8EA]/50 p-6 sm:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.03)]"
-      >
-        <div className="grid lg:grid-cols-[300px_1fr] gap-8 items-center">
-          
-          {/* Left Column: Fruit Image & Badges */}
-          <div className="flex flex-col items-center text-center">
-            <div className="relative group">
-              <div className="absolute -inset-3 rounded-full bg-[#6DBE45]/20 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity" />
-              <img
-                src={f.image}
-                alt={f.name}
-                className="relative h-44 w-44 sm:h-52 sm:w-52 rounded-[24px] object-cover shadow-md border-2 border-white transition-transform duration-500 group-hover:scale-105"
-              />
-              <span className="absolute -top-2 -left-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-md text-2xl border border-slate-100">
-                {f.emoji}
-              </span>
-              <span className="absolute -bottom-2 -right-2 inline-flex items-center gap-1 rounded-full bg-[#FFB84D] px-3 py-1 text-xs font-black text-slate-900 shadow-md">
-                <Flame className="h-3.5 w-3.5 fill-slate-900" />
-                {f.calories} Calories
-              </span>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-xl font-black text-slate-900">{f.name}</h3>
-              <span className="text-xs font-bold text-[#1B7A1A]">100% Farm Fresh Portion</span>
-            </div>
-          </div>
-
-          {/* Right Column: Nutrition Details & Benefits */}
-          <div className="space-y-6">
-            
-            {/* Header Tag */}
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF8DF] px-3 py-0.5 text-[10px] font-black text-[#1B7A1A] border border-[#6DBE45]/30">
-                <Sparkles className="h-3 w-3 text-[#6DBE45]" /> Daily Wellness Breakdown
-              </span>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                Nutritional Profile & Benefits
-              </h3>
-            </div>
-
-            {/* Nutrition KPI Tiles */}
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">Nutrition Facts (Per Serving):</p>
-              <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
-                {f.nutrition.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-[#ECECEC] bg-white p-3.5 text-center shadow-2xs transition-transform hover:-translate-y-0.5"
-                  >
-                    <p className="text-xl sm:text-2xl font-black text-[#1B7A1A] tracking-tight">{item.value}</p>
-                    <p className="text-[11px] font-extrabold text-slate-500 uppercase mt-0.5">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Benefits List */}
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">Key Health Benefits:</p>
-              <div className="grid sm:grid-cols-2 gap-2.5">
-                {f.benefits.map((benefit) => (
-                  <div
-                    key={benefit}
-                    className="flex items-center gap-2.5 rounded-xl bg-white p-3 border border-[#ECECEC] text-xs font-bold text-slate-800 shadow-2xs"
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-[#6DBE45] shrink-0" />
-                    <span>{benefit}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Daily Soaked Almond Pair Callout */}
-            <div className="rounded-2xl border border-[#6DBE45]/30 bg-[#EAF8DF]/60 p-3.5 flex items-center gap-3 text-xs font-extrabold text-[#1B7A1A]">
-              <span className="text-lg leading-none">🌰</span>
-              <div>
-                <p className="font-black text-slate-900">Includes 5 Daily Organic Soaked Almonds</p>
-                <p className="text-[11px] font-semibold text-slate-600 mt-0.5">Paired with fresh {f.name} for optimal digestion, brain health & sustained workday focus.</p>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </motion.div>
-
-    </div>
-  );
-}
 /* ─── FAQ Accordion ────────────────────────────────────────── */
 function FaqAccordion() {
   const [open, setOpen] = useState<number | null>(0);
@@ -483,40 +355,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── NUTRITION EXPLORER ──────────────────────────── */}
-      {/* <section className="section bg-section">
-        <div className="container-x px-4 sm:px-6">
-          <SectionHeading tag="Nutrition" tagColor="light" title="Explore What You're Eating" subtitle="Click any fruit to see its full nutrition profile, benefits, and calorie count." />
-          <Reveal delay={0.1}>
-            <div className="mt-10">
-              <NutritionExplorer fruits={fruits} />
-            </div>
-          </Reveal>
-        </div>
-      </section> */}
 
-      {/* ─── NUTRITION EXPLORER ──────────────────────────── */}
-
-      <section className="section bg-gradient-to-b from-[#f9fcf8] via-white to-[#f6fff8]">
-
-        <div className="container-x px-4 sm:px-6">
-
-          <SectionHeading
-            tag="Nutrition"
-            tagColor="light"
-            title="Explore What You're Eating"
-            subtitle="Discover calories, nutrition facts, and health benefits of your favorite fruits."
-          />
-
-          <Reveal delay={0.1}>
-            <div className="mt-14">
-              <NutritionExplorer fruits={fruits} />
-            </div>
-          </Reveal>
-
-        </div>
-
-      </section>
 
       {/* ─── VIDEO ───────────────────────────────────────── */}
       <section id="video" className="section">

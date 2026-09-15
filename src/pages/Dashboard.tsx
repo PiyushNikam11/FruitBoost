@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Package,
@@ -30,7 +30,8 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Reveal } from "@/components/Reveal";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 // KPI Cards Data
 const kpiStats = [
@@ -101,7 +102,23 @@ const timelineDeliveries = [
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const location = useLocation();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  useEffect(() => {
+    const isJustSubscribed =
+      sessionStorage.getItem("JUST_SUBSCRIBED") === "true" ||
+      (location.state as any)?.showCelebration;
+
+    if (isJustSubscribed) {
+      setShowCelebration(true);
+      sessionStorage.removeItem("JUST_SUBSCRIBED");
+    }
+  }, [location]);
+
+  const firstName = user?.fullName ? user.fullName.split(" ")[0] : (user?.userCode || "");
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -111,6 +128,122 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
+
+        {/* ─── CELEBRATION CONFETTI BLAST MODAL ───────────────────────── */}
+        <AnimatePresence>
+          {showCelebration && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md overflow-hidden"
+            >
+              {/* Confetti Explosion Particles */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {Array.from({ length: 50 }).map((_, i) => {
+                  const colors = [
+                    "#6DBE45",
+                    "#FFB84D",
+                    "#FF5A5F",
+                    "#1B7A1A",
+                    "#3B82F6",
+                    "#EC4899",
+                    "#8B5CF6",
+                    "#F59E0B",
+                  ];
+                  const bg = colors[i % colors.length];
+                  const left = 50 + (Math.random() - 0.5) * 85;
+                  return (
+                    <motion.div
+                      key={i}
+                      className="absolute h-3.5 w-3.5 rounded-xs shadow-md"
+                      style={{
+                        left: `${left}%`,
+                        top: "30%",
+                        backgroundColor: bg,
+                      }}
+                      initial={{ scale: 0, x: 0, y: 0, rotate: 0 }}
+                      animate={{
+                        scale: [0, 1.4, 0.8],
+                        x: (Math.random() - 0.5) * 750,
+                        y: Math.random() * 550 - 180,
+                        rotate: Math.random() * 720 - 360,
+                        opacity: [1, 1, 0],
+                      }}
+                      transition={{
+                        duration: 2.2 + Math.random() * 0.9,
+                        ease: [0.25, 1, 0.5, 1],
+                        repeat: Infinity,
+                        repeatDelay: Math.random() * 1.5,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Main Celebration Card */}
+              <motion.div
+                initial={{ scale: 0.8, y: 30, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.8, y: 20, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="relative z-10 w-full max-w-lg overflow-hidden rounded-[32px] border-2 border-[#6DBE45]/40 bg-white p-8 text-center shadow-[0_25px_80px_rgba(0,0,0,0.35)]"
+              >
+                {/* Background Ambient Glows */}
+                <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#6DBE45]/25 blur-3xl" />
+                <div className="pointer-events-none absolute -left-20 -bottom-20 h-56 w-56 rounded-full bg-[#FFB84D]/25 blur-3xl" />
+
+                {/* Animated Green Sparkle Icon */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 350, delay: 0.15 }}
+                  className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-[#6DBE45] via-[#5FAE2E] to-[#1B7A1A] text-white shadow-[0_10px_30px_rgba(109,190,69,0.4)] ring-8 ring-[#EAF8DF]"
+                >
+                  <Sparkles className="h-10 w-10 animate-pulse" />
+                </motion.div>
+
+                {/* Status Tag */}
+                <div className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-[#EAF8DF] px-4 py-1.5 text-xs font-black text-[#1B7A1A] border border-[#6DBE45]/30">
+                  <CheckCircle2 className="h-4 w-4 text-[#6DBE45]" />
+                  Payment Verified & Subscription Active! 🎉
+                </div>
+
+                {/* Headline */}
+                <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Welcome to FruitBoost! 🍎
+                </h2>
+
+                <p className="mt-2 text-xs sm:text-sm font-semibold text-slate-600 leading-relaxed max-w-md mx-auto">
+                  Your FruitBoost subscription is now active! Get ready to enjoy fresh, seasonal fruits delivered regularly as per your subscription plan.
+                </p>
+
+                {/* Summary Highlights */}
+                <div className="mt-6 grid grid-cols-2 gap-2.5 rounded-2xl bg-[#FCFBF7] p-3.5 border border-slate-200/80 text-left">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400">PLAN</p>
+                    <p className="text-xs font-black text-slate-900 mt-0.5 truncate">Monthly Plan</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400">STATUS</p>
+                    <p className="text-xs font-black text-[#1B7A1A] mt-0.5 flex items-center gap-0.5">
+                      <CheckCircle2 className="h-3 w-3" /> Paid ✓
+                    </p>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <button
+                  onClick={() => setShowCelebration(false)}
+                  className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#6DBE45] via-[#5FAE2E] to-[#1B7A1A] text-sm font-black text-white shadow-[0_8px_25px_rgba(109,190,69,0.4)] transition-all hover:brightness-105 active:scale-95 cursor-pointer"
+                >
+                  <span>Explore My Dashboard 🚀</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ─── TOAST NOTIFICATION ────────────────────────────────────── */}
         <AnimatePresence>
@@ -190,7 +323,7 @@ export default function Dashboard() {
                 </div>
 
                 <h1 className="mt-4 text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                  Welcome back, Aditya! <span className="inline-block origin-bottom-right animate-[bounce_2s_infinite]">👋</span>
+                  {firstName ? `Welcome back, ${firstName}!` : "Welcome back!"} <span className="inline-block origin-bottom-right animate-[bounce_2s_infinite]">👋</span>
                 </h1>
 
                 <p className="mt-2 text-xs sm:text-sm font-semibold text-slate-600 leading-relaxed max-w-xl">

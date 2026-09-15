@@ -24,6 +24,9 @@ import TermsConditions from "@/pages/TermsConditions";
 import RefundPolicy from "@/pages/RefundPolicy";
 import CookiesPolicy from "@/pages/CookiesPolicy";
 import ScrollToTop from "@/components/ScrollToTop";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { ToastProvider } from "@/context/ToastContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function App() {
   const location = useLocation();
@@ -32,39 +35,94 @@ export default function App() {
     location.pathname.startsWith("/dashboard");
 
   return (
-    <div className={`flex min-h-screen flex-col ${hideChrome ? "bg-transparent" : "bg-white"}`}>
-      <ScrollToTop />
-      {!hideChrome && <Navbar />}
-      <main className="flex-1">
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/why-fruitboost" element={<WhyFruitBoost />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/plans" element={<Plans />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsConditions />} />
-            <Route path="/refunds" element={<RefundPolicy />} />
-            <Route path="/refund-policy" element={<RefundPolicy />} />
-            <Route path="/cookies" element={<CookiesPolicy />} />
-            <Route path="/cookies-policy" element={<CookiesPolicy />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/menu" element={<TodaysMenu />} />
-            <Route path="/dashboard/history" element={<DeliveryHistory />} />
-            <Route path="/dashboard/subscription" element={<Subscription />} />
-            <Route path="/dashboard/calendar" element={<CalendarPage />} />
-            <Route path="/dashboard/invoices" element={<Invoices />} />
-            <Route path="/dashboard/settings" element={<SettingsPage />} />
-          </Routes>
-        </AnimatePresence>
-      </main>
-      {!hideChrome && <Footer />}
-    </div>
+    <AuthProvider>
+      <ToastProvider>
+        <div className={`flex min-h-screen flex-col ${hideChrome ? "bg-transparent" : "bg-white"}`}>
+          <ScrollToTop />
+          {!hideChrome && <Navbar />}
+          <main className="flex-1">
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/why-fruitboost" element={<WhyFruitBoost />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/plans" element={<Plans />} />
+                <Route path="/faq" element={<Faq />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsConditions />} />
+                <Route path="/refunds" element={<RefundPolicy />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
+                <Route path="/cookies" element={<CookiesPolicy />} />
+                <Route path="/cookies-policy" element={<CookiesPolicy />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/menu"
+                  element={
+                    <ProtectedRoute>
+                      <TodaysMenu />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/history"
+                  element={
+                    <ProtectedRoute>
+                      <DeliveryHistory />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/subscription"
+                  element={
+                    <ProtectedRoute>
+                      <Subscription />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/calendar"
+                  element={
+                    <ProtectedRoute>
+                      <CalendarPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/invoices"
+                  element={
+                    <ProtectedRoute>
+                      <Invoices />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/settings"
+                  element={
+                    <ProtectedRoute>
+                      <SettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </AnimatePresence>
+          </main>
+          {!hideChrome && <Footer />}
+        </div>
+      </ToastProvider>
+    </AuthProvider>
   );
 }
+
+

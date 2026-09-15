@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -17,7 +17,12 @@ import {
   Building2,
   Wallet,
   Smartphone,
+  RefreshCw,
 } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
+import { useAuth } from "@/context/AuthContext";
+import { apiService, ApiSubscriptionPlan } from "@/services/api";
+import { storage, KEYS } from "@/utils/storage";
 
 const paymentMethods = [
   { id: "upi", label: "UPI", note: "GPay, PhonePe, Paytm", icon: Smartphone, color: "bg-[#E8F5E9] text-[#2E7D32]" },
@@ -26,24 +31,175 @@ const paymentMethods = [
   { id: "wallet", label: "Wallet", note: "Paytm, Amazon Pay", icon: Wallet, color: "bg-amber-50 text-amber-600" },
 ];
 
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function Checkout() {
+  const { showSuccess, showError } = useToast();
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+
   const [method, setMethod] = useState("upi");
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState(false);
   const [paid, setPaid] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedPlanObj, setSelectedPlanObj] = useState<ApiSubscriptionPlan | null>(null);
 
-  const subtotal = 2299;
+  const userId = storage.getUserId();
+  const planId = storage.getPlanId() || 1;
+
+  useEffect(() => {
+    const fetchPlanDetails = async () => {
+      try {
+        const res = await apiService.getSubscriptionPlans();
+        const plans = Array.isArray(res) ? res : (res.data || []);
+        const found = plans.find((p) => p.planId === planId) || plans[0];
+        if (found) {
+          setSelectedPlanObj(found);
+        }
+      } catch {
+        // Fallback to default pricing
+      }
+    };
+    fetchPlanDetails();
+  }, [planId]);
+
+  const basePrice = selectedPlanObj?.finalAmount ?? selectedPlanObj?.price ?? 2299;
+  const subtotal = Math.round(basePrice);
   const gst = Math.round(subtotal * 0.05);
   const discount = applied ? 200 : 0;
   const total = subtotal + gst - discount;
 
-  const handlePay = () => {
+  const handlePay = async () => {
+    if (!userId) {
+      showError("User ID not found. Please complete registration first.");
+      navigate("/register");
+      return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
+
+    try {
+      // 1. Call backend API: POST /Payments/create-order
+      const res = await apiService.createPaymentOrder(userId, planId);
+      
+      if (res.success === false) {
+        showError(res.message || "Failed to create payment order.");
+        setIsProcessing(false);
+        return;
+      }
+
+      const orderData = res.data || res;
+
+      // Extract Razorpay key & order ID from API response
+      const key = orderData?.key || orderData?.razorpayKeyId || orderData?.keyId || orderData?.razorpayKey;
+      const orderId = orderData?.orderId || orderData?.razorpayOrderId || orderData?.id;
+      const amount = orderData?.amount ?? (total * 100);
+      const currency = orderData?.currency || "INR";
+
+      if (!key) {
+        showError("Razorpay Key ID missing from server response.");
+        setIsProcessing(false);
+        return;
+      }
+
+      if (!orderId) {
+        showError("Razorpay Order ID missing from server response.");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 2. Load official Razorpay checkout.js script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        showError("Failed to load Razorpay SDK. Please check your internet connection.");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 3. Standard Razorpay options object
+      const options = {
+        key: key,
+        amount: amount,
+        currency: currency,
+        name: "FruitBoost",
+        description: "Monthly Fruit Subscription",
+        order_id: orderId,
+        handler: async function (response: any) {
+          // On payment success, call POST /Payments/verify
+          try {
+            const verifyRes = await apiService.verifyPayment({
+              userId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if ((verifyRes as any).success === false) {
+              showError((verifyRes as any).message || "Payment verification failed.");
+              setIsProcessing(false);
+              return;
+            }
+
+            const authData = (verifyRes as any).data || verifyRes;
+            const accessToken = authData?.accessToken || (verifyRes as any)?.accessToken;
+
+            if (!accessToken) {
+              showError("Payment verified, but authentication token was missing in server response.");
+              setIsProcessing(false);
+              return;
+            }
+
+            // Save tokens & authenticate user
+            setAuth(authData);
+            storage.setItem(KEYS.SUBSCRIPTION_STATUS, "active");
+            showSuccess("Payment verified successfully! Welcome to FruitBoost.");
+            
+            // Redirect immediately to /dashboard
+            navigate("/dashboard", { replace: true });
+          } catch (verifyErr: any) {
+            showError(verifyErr.message || "Payment verification failed. Please contact support.");
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: orderData?.customerName || storage.getItem(KEYS.USER_CODE) || "",
+          email: orderData?.email || storage.getItem(KEYS.EMAIL) || "",
+          contact: orderData?.contact || storage.getItem(KEYS.MOBILE) || "",
+        },
+        theme: {
+          color: "#53A318",
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            showError("Payment cancelled by user.");
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        showError(response.error?.description || "Payment failed. Please try again.");
+        setIsProcessing(false);
+      });
+      rzp.open();
+    } catch (err: any) {
+      showError(err.message || "Failed to create payment order. Please try again.");
       setIsProcessing(false);
-      setPaid(true);
-    }, 600);
+    }
   };
 
   return (
@@ -65,7 +221,7 @@ export default function Checkout() {
           </Link>
 
           <Link to="/" className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="FrootBoost Logo" className="h-10 sm:h-12 w-auto object-contain" />
+            <img src="/images/logo.png" alt="FrootBoost Logo" className="h-12 sm:h-15 w-auto object-contain" />
           </Link>
         </div>
 
@@ -100,7 +256,7 @@ export default function Checkout() {
 
                   {/* Summary Rows */}
                   <div className="mt-5 space-y-3 text-sm">
-                    <SummaryRow label="Plan" value="Monthly Plan" />
+                    <SummaryRow label="Plan" value={selectedPlanObj?.planName || "Monthly Plan"} />
                     <SummaryRow label="Delivery days" value="Mon – Sat" highlight />
                     <SummaryRow label="Subtotal" value={`₹${subtotal}`} />
                     <SummaryRow label="GST (5%)" value={`₹${gst}`} />
@@ -205,10 +361,12 @@ export default function Checkout() {
                     type="button"
                     onClick={handlePay}
                     disabled={isProcessing}
-                    className="group mt-6 flex h-[56px] w-full items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-[#5FAE2E] via-[#4CAF50] to-[#2E7D32] text-base font-black text-white shadow-[0_8px_25px_rgba(95,174,46,0.3)] transition-all duration-300 hover:shadow-[0_12px_35px_rgba(95,174,46,0.5)] hover:brightness-105 active:scale-[0.99]"
+                    className="group mt-6 flex h-[56px] w-full items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-[#5FAE2E] via-[#4CAF50] to-[#2E7D32] text-base font-black text-white shadow-[0_8px_25px_rgba(95,174,46,0.3)] transition-all duration-300 hover:shadow-[0_12px_35px_rgba(95,174,46,0.5)] hover:brightness-105 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? (
-                      <span className="flex items-center gap-2">Processing Payment...</span>
+                      <span className="flex items-center gap-2">
+                        <RefreshCw className="h-5 w-5 animate-spin" /> Processing Payment...
+                      </span>
                     ) : (
                       <>
                         <span>Pay ₹{total} Now</span>
@@ -307,7 +465,7 @@ export default function Checkout() {
                   <div className="flex justify-between items-center border-t border-slate-200/60 pt-2">
                     <span className="text-slate-500 font-medium">Transaction ID</span>
                     <span className="font-mono text-xs font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
-                      TXN88421937
+                      TXN{Math.floor(10000000 + Math.random() * 90000000)}
                     </span>
                   </div>
                 </div>
